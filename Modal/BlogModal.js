@@ -19,6 +19,7 @@ const blogSchema = new mongoose.Schema({
         required: true,
     },
     like:[{type:String}],
+    dislike:[{type:String}],
     description: {
         type:String,
         required: true,

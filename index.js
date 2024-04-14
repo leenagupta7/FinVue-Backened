@@ -97,6 +97,26 @@ app.put('/unlikeblog', async(req, res) => {
         console.log({"error in backened like part":err})
     }
 })
+app.put('/dislikeblog',async(req,res)=>{
+    const {_id}=req.body;
+    try{
+        const data= await Blog.findByIdAndUpdate(_id,{$addToSet:{dislike:req.body.userId}}, {new:true});
+        res.json(data);
+    }
+    catch(error){
+        console.log({"error in backend dislike part":error})
+    }
+})
+app.put('/undislikeblog',async(req,res)=>{
+    const {_id}=req.body;
+    try{
+        const data= await Blog.findByIdAndUpdate(_id,{$pull:{dislike:req.body.userId}}, {new:true});
+        res.json(data);
+    }
+    catch(error){
+        console.log({"error in backend dislike part":error})
+    }
+})
 app.post('/sendScore/:id', async (req, res) => {
     const id = req.params.id;
     const { score, userId } = req.body;

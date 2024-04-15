@@ -152,6 +152,52 @@ app.get('/getScore/:id',async(req,res)=>{
         console.log(err);
     }
 })
+app.post('/updateProfile',async(req,res)=>{
+    const { userId } = req.body;
+    console.log(req.files.file);
+    const file = req.files.file ? req.files.file : null;
+    if (file === null) {
+        return res.status(500).json({ error: 'Error file is null' })
+    }
+    cloudinary.uploader.upload(file.tempFilePath, async (err, result) => {
+        console.log(result);
+ 
+        let user = await User.findOne({ userId });
+
+        if (!user) {
+            user = await User.create({
+                userId: req.body.userId,
+            });
+        }
+        user.picture= result.secure_url;
+        await user.save()
+             .then(result => {
+                 console.log(result);
+                 res.status(200).json({
+                    user:user
+                 });
+             })
+             .catch(err => {
+                 console.error(err);
+                 res.status(500).json({
+                     error: 'Error in updating profile pic.',
+                 });
+             });
+     })
+})
+app.get('/getProfile/:id',async(req,res)=>{
+    const userId = req.params.id;
+    console.log(userId);
+    try{
+        const user = await User.find({userId:userId});
+        console.log(user);
+        res.status(200).json({
+            user:user
+         });
+    }catch(err){
+        console.log(err);
+    }
+})
 mongoose.connect(process.env.DATABASE_URL)
 .then(() => {
     console.log('MongoDB connected');

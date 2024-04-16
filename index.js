@@ -40,7 +40,10 @@ app.post('/createblog', async (req, res) => {
     } else {
         createBlog(); // No file uploaded, proceed to create the blog
     }
-
+    const user= await User.findOne({userId:req.body.userId});
+    if(user && user.picture){
+        req.body.userImage=user.picture;
+    }
     function createBlog() {
         const blog = new Blog({
             userId: req.body.userId,

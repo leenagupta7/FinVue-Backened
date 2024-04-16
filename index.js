@@ -23,21 +23,34 @@ cloudinary.config({
 
 app.post('/createblog', async (req, res) => {
     console.log(req.body);
-    const file = req.files.file ? req.files.file : null;
-    if (file === null) {
-        return res.status(500).json({ error: 'Error file is null' })
-    }
-    cloudinary.uploader.upload(file.tempFilePath, async (err, result) => {
-        console.log(result);
+    let image = null;
 
+    // Check if a file is uploaded
+    if (req.files && req.files.file) {
+        const file = req.files.file;
+        cloudinary.uploader.upload(file.tempFilePath, async (err, result) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ error: 'Error uploading file to Cloudinary.' });
+            }
+            console.log(result);
+            image = result.secure_url; // Set the image URL
+            createBlog();
+        });
+    } else {
+        createBlog(); // No file uploaded, proceed to create the blog
+    }
+
+    function createBlog() {
         const blog = new Blog({
             userId: req.body.userId,
             username: req.body.username,
             picture: req.body.userImage,
             title: req.body.title,
             description: req.body.description,
-            image: result.secure_url,
+            image: image, // Use the image URL if available
         });
+
         blog.save()
             .then(result => {
                 console.log(result);
@@ -51,8 +64,9 @@ app.post('/createblog', async (req, res) => {
                     error: 'Error in creating a blog.',
                 });
             });
-    })
+    }
 });
+
 app.get('/getblog', async (req, res) => {
     try {
         const blogs = await Blog.find().sort({ createdAt: -1 });
